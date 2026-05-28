@@ -1,0 +1,101 @@
+import Jefe from "../../models/producction.js";
+import { capitalize, validarNombre, validarApellido, validarCedula, validarTelefono } from "../../helpers/validation.js";
+import { sendMailToOwner } from "../../helpers/sendMail.js";
+import { subirBase64Cloudinary, subirImagenCloudinary } from "../../helpers/uploadCloudinary.js";
+
+
+export const registrarJefe = async (req, res) => {
+  try {
+    const { email, cedula, telefono, nombre1, apellido1, nombre2, apellido2 } = req.body;
+
+    if (Object.values(req.body).includes("")) {
+      return res.status(400).json({ msg: "Debes llenar todos los campos" });
+    }
+
+    const datosExistente = await Jefe.findOne({ $or: [{ email }, { cedula }] });
+
+    if (datosExistente) {
+      if (datosExistente.status === "Inactivo") {
+        return res.status(409).json({
+          msg: "Jefe se encuentra en estado Inactivo. Por favor, actívalo desde la gestión de jefes.",
+        });
+      } else {
+        return res.status(400).json({
+          msg: "La cédula o email ya se encuentra registrado y está activo",
+        });
+      }
+    }
+
+    
+
+    // Validaciones - guardamos los valores capitalizados en variables locales
+    const validacionNombre1 = validarNombre(nombre1);
+    if (validacionNombre1 !== true) return res.status(400).json({ msg: validacionNombre1 });
+    const nombre1Capitalizado = capitalize(nombre1);
+
+    let nombre2Capitalizado = "";
+    if (nombre2) {
+      const validacionNombre2 = validarNombre(nombre2);
+      if (validacionNombre2 !== true) return res.status(400).json({ msg: validacionNombre2 });
+      nombre2Capitalizado = capitalize(nombre2);
+    }
+
+    const validacionApellido1 = validarApellido(apellido1);
+    if (validacionApellido1 !== true) return res.status(400).json({ msg: validacionApellido1 });
+    const apellido1Capitalizado = capitalize(apellido1);
+
+    let apellido2Capitalizado = "";
+    if (apellido2) {
+      const validacionApellido2 = validarApellido(apellido2);
+      if (validacionApellido2 !== true) return res.status(400).json({ msg: validacionApellido2 });
+      apellido2Capitalizado = capitalize(apellido2);
+    }
+
+    const validacionCedula = validarCedula(cedula);
+    if (validacionCedula !== true) return res.status(400).json({ msg: validacionCedula });
+
+    const validacionTelefono = validarTelefono(telefono);
+    if (validacionTelefono !== true) return res.status(400).json({ msg: validacionTelefono });
+
+    // Ahora sí armamos el objeto con los valores ya validados y capitalizados
+    const formato = {
+      email,
+      cedula,
+      telefono,
+      nombre1: nombre1Capitalizado,
+      nombre2: nombre2Capitalizado,
+      apellido1: apellido1Capitalizado,
+      apellido2: apellido2Capitalizado,
+      status: "Activo",
+    };
+
+    const password = Math.random().toString(36).toUpperCase().slice(2, 15);
+
+    const nuevoJefe = new Jefe({
+      ...formato,
+      password: await Jefe.prototype.encryptPassword(password),
+      administrador: req.administratorHeader?._id || null,
+    });
+
+    if (req.files?.imagen) {
+            const { secure_url, public_id } = await subirImagenCloudinary(req.files.imagen.tempFilePath)
+            nuevoJefe.Imagen = secure_url
+            nuevoJefe.ImagenID = public_id
+        }
+    
+
+    if (req.body?.avatarIA) {
+            const secure_url = await subirBase64Cloudinary(req.body.avatarIA)
+            nuevoJefe.avatarIA = secure_url
+        }
+        
+    await nuevoJefe.save();
+    await sendMailToOwner(email, password);
+
+    return res.status(201).json({ msg: "Registro exitoso del Jefe de Producción y correo enviado" });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ msg: `❌ Error en el servidor - ${error.message}` });
+  }
+};
