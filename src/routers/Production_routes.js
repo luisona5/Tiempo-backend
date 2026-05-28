@@ -21,4 +21,5 @@ router.put('/Produccion-jefe/actualizar-imagen/:id',verificarTokenJWT,actualizar
 router.delete('/Produccion-jefe/eliminar-imagen/:id',verificarTokenJWT,eliminarImagen);
 
 
+
 export default router;
