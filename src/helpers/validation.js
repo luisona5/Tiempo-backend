@@ -1,20 +1,3 @@
-export const FechaEcuador = () => {
-    const opciones = { 
-        timeZone: 'America/Guayaquil', 
-        year: 'numeric', month: 'numeric', day: 'numeric', 
-        hour: 'numeric', minute: 'numeric', second: 'numeric', 
-        hour12: false 
-    };
-    const formatter = new Intl.DateTimeFormat('en-US', opciones);
-    const partes = formatter.formatToParts(new Date());
-    
-    const d = {};
-    partes.forEach(({ type, value }) => d[type] = value);
-    
-    return new Date(d.year, d.month - 1, d.day, d.hour, d.minute, d.second);
-};
-
-
 
 // Función para  cada palabra contenga mayuscula al inicio y el resto en minúscula
 export const capitalize = (str) => {

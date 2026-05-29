@@ -1,0 +1,70 @@
+import mongoose, { Schema, model } from "mongoose";
+
+const productionTiempoSchema = new Schema({
+    detalle: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    operacion: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    fecha: {
+        type: Date,
+        trim: true
+    },
+    horaInicio: {
+        type: Date,         // ← Date permite restar horas directamente
+        trim: true
+    },
+    horaFin: {
+        type: Date,         // ← Date permite restar horas directamente
+        trim: true
+    },
+    tiempoEstandar: {
+        type: Number,       // ← en minutos o segundos
+        trim: true
+    },
+    cantidad: {
+        type: Number,       // ← valor numérico para hacer sumas/promedios
+        trim: true
+    },
+    estado: {
+        type: Boolean,
+        default: true
+    },
+    diferenciaTiempo: {
+        type: Number,       // ← resultado de horaFin - horaInicio (en minutos)
+        trim: true
+    },
+    token: {
+        type: String,
+        default: null
+    },
+    Imagen: {
+        type: String,
+        trim: true
+    },
+    ImagenID: {
+        type: String,
+        trim: true
+    },
+    avatarIA: {
+        type: String,
+        trim: true
+    },
+    production: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Production'
+    },
+    productionUser: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ProductionUser'
+    }
+}, {
+    timestamps: true
+})
+
+export default model ('ProductionTiempo',productionTiempoSchema)

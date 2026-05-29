@@ -41,7 +41,13 @@ const verificarTokenJWT = async (req, res, next) => {
             req.productionHeader = productionBDD
             next()
         }
-    
+        if (rol === "ProductionUser") {
+            const productionUserBDD = await production.findById(id).lean().select("-password")
+            if (!productionUserBDD) 
+                return res.status(401).json({ msg: "Usuario no encontrado" })
+            req.productionUserHeader = productionUserBDD
+            next()
+        }
     } catch (error) {
         console.log(error)
         return res.status(401).json({ msg: `❌ Token inválido o expirado - ${error}` })
