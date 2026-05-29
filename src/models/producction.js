@@ -79,7 +79,13 @@ const productionSchema = new Schema({
    administrador:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Administrator'
-    }
+    },
+    
+    productionUser:{
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'ProductionUser',
+        }
+    
 
 },{
     timestamps:true
